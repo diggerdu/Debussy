@@ -44,7 +44,7 @@ class transciber(object):
         print('Loading model from file %s' % modelPath, file=sys.stderr)
         model_load_start = timer()
         self.model = Model(modelPath, numFeatures, numContext, alphabet, beamWidth)
-        self.model.enableDecoderWithLM(alphabet, lmPath, trie, LM_WEIGHT, WORD_COUNT_WEIGHT, VALID_WORD_COUNT_WEIGHT)
+        #self.model.enableDecoderWithLM(alphabet, lmPath, trie, LM_WEIGHT, WORD_COUNT_WEIGHT, VALID_WORD_COUNT_WEIGHT)
         model_load_end = timer() - model_load_start
         print('Loaded model in %0.3fs.' % (model_load_end), file=sys.stderr)
 
@@ -64,6 +64,9 @@ if __name__ == '__main__':
     import pickle
     labelDict = dict()
     persistFile = open('trainlabel.pkl', 'wb')
+    csvFile = open('trainlabel.csv', 'w+')
+    count = 0
+
     for dn in os.listdir('/home/diggerdu/dataset/tfsrc/train/audio'):
         print(dn)
         for fn in os.listdir('/home/diggerdu/dataset/tfsrc/train/audio/{0}'.format(dn)):
@@ -71,9 +74,15 @@ if __name__ == '__main__':
                 assert fn.endswith('.wav')
                 label = TR.transcribe('/home/diggerdu/dataset/tfsrc/train/audio/{0}/{1}'.format(dn, fn))
                 labelDict.update({'{0}/{1}'.format(dn, fn):label})
+                count += 1
+                sys.stdout.write("Processing: {}\r".format(count))
+                sys.stdout.flush()
+                print("{0},{1}".format(fn, label), file=csvFile)
+                csvFile.flush()
             except:
                 continue
 
     pickle.dump(labelDict, persistFile, True)
     persistFile.close()
+    csvFile.close()
     #TR.transcribe('/home/diggerdu/dataset/Large/clean/p225/p225_003.wav')
