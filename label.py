@@ -55,12 +55,14 @@ if args.csvFile1 is not None:
         reader = csv.reader(f)
         labelDict1 = {rows[0]:rows[1] for rows in reader if rows[0].endswith('.wav')}
         playList1 = [key for key in list(labelDict1.keys()) if labelDict1[key] == args.label or args.label is None]
-    playList = list(set(playList).symmetric_difference(set(playList1)))
+    #playList = list(set(playList).symmetric_difference(set(playList1)))
+    playList = list(set(playList1).difference(set(playList)))
 
 
 playList = list(set(playList).difference(set(patchList)))
 #import pdb; pdb.set_trace()
 Length = len(playList)
+
 
 
 outputFile = open(args.outputFile, "w+")
