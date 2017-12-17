@@ -48,7 +48,6 @@ for epoch in range(startEpoch+1, opt.niter + 1):
 
 
     t = time.time() - epoch_start_time
-    print(accSum)
     print('epoch ', epoch, ', current error is ', errorSum / counter, ', current acc is ', accSum / dataCount, ' cost time is ', t)
     if time.time() - embark_time > 60 * 2:
         model.save('latest')

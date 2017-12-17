@@ -17,7 +17,7 @@ parser.add_argument("-o", "--outputFile", required=True, help="output file")
 parser.add_argument("-s", "--speed", type=int, required=True, help="speed")
 args = parser.parse_args()
 
-configIntension = {'timeout': 2}
+configIntension = {'timeout': 3}
 configMiddle = {'timeout': 6}
 configSlow = {'timeout': 10}
 

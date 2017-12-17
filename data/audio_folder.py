@@ -15,27 +15,18 @@ def is_audio_file(filename):
     return any(filename.endswith(extension) for extension in AUDIO_EXTENSIONS)
 
 
-def make_dataset(dir, opt):
-    audios = []
-    labels = []
-    Fnames = []
-    try:
-        audios = np.load(opt.dumpPath + "/audios.npy")
-        labels = np.load(opt.dumpPath + "/labels.npy").tolist()
-        Fnames = np.load(opt.dumpPath + "/Fnames.npy").tolist()
-        print("######CAUTION:previous generated dataset loaded###########")
-        return audios, labels, Fnames
-    except:
-        pass
+def loadData(Dir, opt):
+    assert os.path.isdir(Dir), '%s is not a valid directory' % dir
+    audios = list()
+    labels = list()
+    fnames = list()
 
-    assert os.path.isdir(dir), '%s is not a valid directory' % dir
-
-    for root, _, fnames in sorted(os.walk(dir)):
-        for fname in fnames:
+    for root, _, fns in sorted(os.walk(Dir)):
+        for fname in fns:
             if is_audio_file(fname):
                 path = os.path.join(root, fname)
-                label = path.split('/')[-2]
                 print(path)
+                label = path.split('/')[-2]
                 try:
                     wav, sr = sf.read(path, dtype='float32')
                 except:
@@ -75,8 +66,34 @@ def make_dataset(dir, opt):
 
                 audios.append(melsp.astype(np.float32))
                 labels.append(label)
-                Fnames.append(fname)
+                fnames.append(fname)
+    return {'audios':audios, 'labels':labels, 'fnames':fnames}
+
+
+
+def make_dataset(opt):
+    audios = []
+    labels = []
+    fnames = []
+    try:
+        audios = np.load(opt.dumpPath + "/audios.npy")
+        labels = np.load(opt.dumpPath + "/labels.npy").tolist()
+        fnames = np.load(opt.dumpPath + "/fnames.npy").tolist()
+        print("######CAUTION:previous generated dataset loaded###########")
+        return audios, labels, fnames
+    except:
+        pass
+
+    data = loadData(opt.Path, opt)
+    audios = data['audios']
+    labels = data['labels']
+    fnames = data['fnames']
+    if opt.additionPath is not None:
+        additionData = loadData(opt.additionPath, opt)
+        audios.extend(additionData['audios'])
+        labels.extend(additionData['labels'])
+        fnames.extend(additionData['fnames'])
     np.save(opt.dumpPath + "/audios.npy", np.array(audios))
     np.save(opt.dumpPath + "/labels.npy", np.array(labels))
-    np.save(opt.dumpPath + "/Fnames.npy", np.array(Fnames))
-    return audios, labels, Fnames
+    np.save(opt.dumpPath + "/fnames.npy", np.array(fnames))
+    return audios, labels, fnames

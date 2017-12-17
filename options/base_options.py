@@ -10,6 +10,7 @@ class BaseOptions():
 
     def initialize(self):
         self.parser.add_argument('--Path', required=True, help='Sample Path')
+        self.parser.add_argument('--additionPath', help='addition sample Path')
         self.parser.add_argument('--dumpPath', required=True, help='Sample Dump Path')
         self.parser.add_argument('--nClasses', type=int, required=True, default=12, help='the number of classes')
         self.parser.add_argument('--batchSize', type=int, default=64, help='input batch size')

@@ -107,7 +107,10 @@ class Pix2PixModel(BaseModel):
         # self.predLogits = self.netG.forward(self.input)['logits']
         #self.netG.train()
 
-        prediction = np.argmax(self.predLogits.cpu().data.numpy(), axis=1).astype(int)
+        logitsArray = self.predLogits.cpu().data.numpy()
+        # logitsArray[:,-1] = np.min(logitsArray) - 1.
+        prediction = np.argmax(logitsArray, axis=1).astype(int)
+
         print(np.sum(self.inputLabel.cpu().numpy() == prediction) / max(prediction.shape))
         predictLabel = [self.table[i] for i in prediction]
         # import pdb; pdb.set_trace()

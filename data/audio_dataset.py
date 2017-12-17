@@ -11,7 +11,7 @@ class AudioDataset(BaseDataset):
     def initialize(self, opt):
         self.opt = opt
         self.Dir = opt.Path
-        self.Data, self.Labels, self.Fnames = make_dataset(self.Dir, opt)
+        self.Data, self.Labels, self.Fnames = make_dataset(opt)
 
         self.SR = opt.SR
         self.hop = opt.hop

@@ -180,8 +180,7 @@ class CNN(nn.Module):
                                     nn.SELU(inplace=True),
                                     nn.Linear(512, 128),
                                     nn.SELU(inplace=True),
-                                    nn.Linear(128, numClass),
-                                    nn.SELU(inplace=True)
+                                    nn.Linear(128, numClass)
                 )
 
     def forward(self, input):

@@ -86,5 +86,4 @@ if __name__ == '__main__':
         except:
             continue
     pickle.dump(labelDict, persistFile)
-    persistFile.flush()
     persistFile.close()
