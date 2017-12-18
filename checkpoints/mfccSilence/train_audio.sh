@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export CUDA_VISIBLE_DEVICES=0,2
+export CUDA_VISIBLE_DEVICES=0,1,2
 expName=mfccSilence
 selfPath=`realpath $0`
 cd "$(git rev-parse --show-toplevel)"
@@ -16,7 +16,6 @@ python train.py \
  --split_hop 0 \
  --niter 100000000000000000000000000000000000 --niter_decay 30 \
  --lr 1e-5 \
- --gpu_ids 0,1 \
- --continue_train \
- --which_epoch 23 \
+ --gpu_ids 0,1,2 \
+ --continue_train  --which_epoch 24 \
 #  --serial_batches

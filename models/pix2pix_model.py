@@ -42,6 +42,9 @@ class Pix2PixModel(BaseModel):
             #                              opt.n_layers_D, opt.norm, use_sigmoid, self.gpu_ids)
 
         if not self.isTrain or opt.continue_train:
+            from util.getPatch import getLabelDict
+            self.relabelDict = getLabelDict('./labeling')
+
             self.load_network(self.netG, 'G', opt.which_epoch)
             # if self.isTrain:
             #    self.load_network(self.netD, 'D', opt.which_epoch)
@@ -101,6 +104,7 @@ class Pix2PixModel(BaseModel):
 
     # no backprop gradients
     def test(self):
+        labeledList = list(self.relabelDict.keys())
         self.netG.eval()
         self.forward()
         # self.input = Variable(self.inputAudio, volatile=True)
@@ -113,14 +117,18 @@ class Pix2PixModel(BaseModel):
 
         print(np.sum(self.inputLabel.cpu().numpy() == prediction) / max(prediction.shape))
         predictLabel = [self.table[i] for i in prediction]
-        # import pdb; pdb.set_trace()
 
+        relabelCount = 0
         with open(self.sub_name, 'a') as f:
             message = [m for m in zip(self.inputFname, predictLabel)]
             writer = csv.writer(f)
             for row in message:
+                if row[0] in labeledList and self.relabelDict[row[0]] != row[1]:
+                    row = (row[0],self.relabelDict[row[0]])
+                    relabelCount += 1
                 writer.writerow(row)
-                # print(row)
+
+        print('relabeling ', relabelCount)
         f.close()
         self.netG.train()
 

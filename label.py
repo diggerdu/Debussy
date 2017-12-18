@@ -25,7 +25,7 @@ configTable = [configIntension, configMiddle, configSlow]
 config = configTable[args.speed]
 
 
-patchList = getPatch('./patch')
+patchList = getPatch('./labeling')
 
 
 def timeout_input(timeout=6):
