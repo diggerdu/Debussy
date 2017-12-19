@@ -6,23 +6,41 @@ import soundfile as sf
 import numpy as np
 import random
 
+class freqFilter(object):
+    def __init__(self, stopFreq=49):
+        self.stopFreq = 49
+    def __call__(self, audio):
+        assert len(audio.shape) == 2
+        tmp = np.array(audio)
+        tmp[self.stopFreq:,:] = 0.
+        return tmp
 
 class AudioDataset(BaseDataset):
     def initialize(self, opt):
         self.opt = opt
         self.Dir = opt.Path
         self.Data, self.Labels, self.Fnames = make_dataset(opt)
-
+        self.oriLen = len(self.Data)
         self.SR = opt.SR
         self.hop = opt.hop
         self.nfft = self.opt.nfft
         self.table = ['yes', 'no', 'up', 'down', 'left', 'right', 'on', 'off', 'stop', 'go', 'silence', 'unknown']
+        if opt.isTrain:
+            self.augFuncList = [lambda x:x, freqFilter()]
+        else:
+            self.augFuncList = [lambda x:x]
+
 
     def __getitem__(self, index):
-        Data = self.Data[index]
-        Label = self.Labels[index]
-        fname = self.Fnames[index]
+        Data = self.Data[index % self.oriLen]
+        Data = self.augFuncList[index // self.oriLen](Data)
+        Label = self.Labels[index % self.oriLen]
+        fname = self.Fnames[index % self.oriLen]
         Audio = np.expand_dims(Data, axis=0)
+
+        if index > self.oriLen:
+            assert np.sum(Data[49:,:]) == 0.
+
         # Audio = self.load_audio(Data)
 
         assert Audio.dtype==np.float32
@@ -38,7 +56,7 @@ class AudioDataset(BaseDataset):
 
     def __len__(self):
         # return len(self.FilesClean)
-        return len(self.Data)
+        return self.oriLen * len(self.augFuncList)
         # return max(len(self.Clean), len(self.Noise))
 
     def name(self):

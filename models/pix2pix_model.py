@@ -54,10 +54,9 @@ class Pix2PixModel(BaseModel):
             self.old_lr = opt.lr
             # define loss functions
             # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
-            self.criterion = torch.nn.CrossEntropyLoss()
+            self.criterion = torch.nn.NLLLoss()
 
             # initialize optimizers
-
             self.TrainableParam = list()
             param = self.netG.named_parameters()
             IgnoredParam = [id(P) for name, P in param if 'stft' in name]
