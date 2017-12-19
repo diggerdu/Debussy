@@ -12,10 +12,10 @@ python train.py \
  --nClasses 12\
  --name $expName --model pix2pix --which_model_netG wide_resnet_3blocks \
  --nThreads 13\
- --nfft 512 --hop 256 --nFrames 64 --batchSize  2200\
+ --nfft 512 --hop 256 --nFrames 64 --batchSize  4500\
  --split_hop 0 \
- --niter 100 --niter_decay 30 \
- --lr 1e-4 \
+ --niter 200 --niter_decay 30 \
+ --lr 1e-5 \
  --gpu_ids 0,1,2 \
-# --continue_train  --which_epoch 12 \
-#  --serial_batches
+ --continue_train  --which_epoch 99 \
+# --serial_batches

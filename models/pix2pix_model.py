@@ -53,8 +53,14 @@ class Pix2PixModel(BaseModel):
             # self.fake_AB_pool = ImagePool(opt.pool_size)
             self.old_lr = opt.lr
             # define loss functions
-            # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
-            self.criterion = torch.nn.NLLLoss()
+
+             # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
+            # TODO
+            CEWeights = torch.ones((self.opt.nClasses))
+            CEWeights[-1] = 1e-3
+            CEWeights[-2] = 0.9
+            #######
+            self.criterion = torch.nn.NLLLoss(weight=CEWeights.cuda())
 
             # initialize optimizers
             self.TrainableParam = list()

@@ -3,10 +3,10 @@ Path: /home/diggerdu/dataset/tfsrc/train/audio/
 SR: 16000
 activiation: sigmoid
 additionPath: /home/diggerdu/dataset/tfsrc/extendTrain/
-batchSize: 2200
+batchSize: 4500
 beta1: 0.5
 checkpoints_dir: ./checkpoints
-continue_train: False
+continue_train: True
 display_freq: 100
 display_id: 1
 display_port: 52006
@@ -21,7 +21,7 @@ isTrain: True
 lambda_A: 10.0
 lambda_B: 10.0
 len: 16640
-lr: 0.0001
+lr: 1e-05
 max_dataset_size: inf
 model: pix2pix
 nClasses: 12
@@ -32,7 +32,7 @@ name: mfccLog
 ndf: 64
 nfft: 512
 ngf: 64
-niter: 100
+niter: 200
 niter_decay: 30
 no_html: False
 no_lsgan: False
@@ -48,7 +48,7 @@ serial_batches: False
 split_hop: 0
 use_dropout: False
 which_direction: AtoB
-which_epoch: latest
+which_epoch: 99
 which_model_netD: basic
 which_model_netG: wide_resnet_3blocks
 -------------- End ----------------
