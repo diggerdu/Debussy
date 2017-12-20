@@ -1,3 +1,0 @@
-[submodule "labeling"]
-    path = labeling
-    url = git://github.com/diggerdu/relabel.git
