@@ -17,5 +17,5 @@ python train.py \
  --niter 200 --niter_decay 30 \
  --lr 1e-5 \
  --gpu_ids 0,1,2 \
- --continue_train  --which_epoch 99 \
+ --continue_train  --which_epoch 130 \
 # --serial_batches
