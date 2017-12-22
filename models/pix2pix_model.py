@@ -4,6 +4,7 @@ import torch
 import os
 from collections import OrderedDict
 from torch.autograd import Variable
+from torch.optim import lr_scheduler
 import util.util as util
 from util.image_pool import ImagePool
 from .base_model import BaseModel
@@ -30,7 +31,7 @@ class Pix2PixModel(BaseModel):
 
         # define tensors self.Tensor has been reloaded
         self.inputAudio = self.Tensor(opt.batchSize, opt.len).cuda(device=self.gpu_ids[0])
-        self.inputLabel = torch.LongTensor(opt.batchSize, opt.nClasses).cuda(device=self.gpu_ids[0])
+        self.inputLabel = self.Tensor(opt.batchSize, opt.nClasses).cuda(device=self.gpu_ids[0])
         # load/define networks
         self.netG = networks.define_G(opt.nClasses, self.gpu_ids)
 
@@ -57,8 +58,8 @@ class Pix2PixModel(BaseModel):
              # self.criterionGAN = networks.GANLoss(use_lsgan=not opt.no_lsgan, tensor=self.Tensor)
             # TODO
             CEWeights = torch.ones((self.opt.nClasses))
-            CEWeights[-1] = 1e-3
-            CEWeights[-2] = 0.9
+            #CEWeights[-1] = 1e-3
+            #CEWeights[-2] = 0.9
             #######
             self.criterion = torch.nn.NLLLoss(weight=CEWeights.cuda())
 
@@ -80,8 +81,7 @@ class Pix2PixModel(BaseModel):
                        self.netG.parameters()),
                         lr=opt.lr)
 
-
-
+            self.lrSche = lr_scheduler.ReduceLROnPlateau(self.optimizer_G, 'min', patience=6, verbose=True)
 
             print('---------- Networks initialized ---------------')
             networks.print_network(self.netG)
@@ -92,12 +92,37 @@ class Pix2PixModel(BaseModel):
         AtoB = self.opt.which_direction == 'AtoB'
         inputAudio = input['Audio']
         inputLabel = input['Label']
-        self.inputFname = input['Fname']
 
+        if self.opt.isTrain:
+            inputAudio, inputLabel = self.mixup(inputAudio, inputLabel)
+
+        self.inputFname = input['Fname']
         self.inputAudio.resize_(inputAudio.size()).copy_(inputAudio)
         self.inputLabel.resize_(inputLabel.size()).copy_(inputLabel)
-
         self.image_paths = 'NOTIMPLEMENT'
+
+    def mixup(self, inputs, targets):
+        batchSize = inputs.shape[0]
+        indexB = torch.randperm(batchSize)
+        inputsB = inputs[indexB]
+        targetsB = targets[indexB]
+
+        # TODO
+        alpha = 0.1
+        mixRatio = np.random.beta(alpha, alpha, [batchSize, ])
+        mixRatioInputs = np.broadcast_to(mixRatio[..., None, None, None], inputs.shape)
+        mixRatioInputs = torch.from_numpy(mixRatioInputs).float()
+        mixRatioTargets = np.broadcast_to(mixRatio[..., None], targets.shape)
+        mixRatioTargets = torch.from_numpy(mixRatioTargets).float()
+
+        mixInputs = mixRatioInputs * inputs + (1-mixRatioInputs) * inputsB
+        mixTargets = mixRatioTargets * targets + (1-mixRatioTargets) * targetsB
+        try:
+            assert np.abs(np.sum(mixTargets.numpy()) - batchSize) < 1e-5
+        except:
+            import pdb; pdb.set_trace()
+
+        return mixInputs, mixTargets
 
     def forward(self):
         self.input = Variable(self.inputAudio)
@@ -120,7 +145,9 @@ class Pix2PixModel(BaseModel):
         # logitsArray[:,-1] = np.min(logitsArray) - 1.
         prediction = np.argmax(logitsArray, axis=1).astype(int)
 
-        print(np.sum(self.inputLabel.cpu().numpy() == prediction) / max(prediction.shape))
+        LabelCodeArray = np.argmax(self.inputLabel.cpu().numpy(), axis=1)
+
+        print(np.sum(LabelCodeArray == prediction) / max(prediction.shape))
         predictLabel = [self.table[i] for i in prediction]
 
         relabelCount = 0
@@ -131,6 +158,7 @@ class Pix2PixModel(BaseModel):
                 if row[0] in labeledList and self.relabelDict[row[0]] != row[1]:
                     row = (row[0],self.relabelDict[row[0]])
                     relabelCount += 1
+                assert row[1] in self.table
                 writer.writerow(row)
 
         print('relabeling ', relabelCount)
@@ -146,7 +174,9 @@ class Pix2PixModel(BaseModel):
 
     def backward_G(self):
         Label = Variable(self.inputLabel, requires_grad=False)
-        self.loss_G = self.criterion(self.predLogits, Label)
+
+        self.loss_G = torch.mean(-self.predLogits * Label)
+        #self.loss_G = self.criterion(self.predLogits, Label)
 
         self.loss_G.backward()
 

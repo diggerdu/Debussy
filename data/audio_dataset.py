@@ -9,11 +9,9 @@ import random
 class freqFilter(object):
     def __init__(self, stopFreq=49):
         self.stopFreq = 49
-    def __call__(self, audio):
-        assert len(audio.shape) == 2
-        tmp = np.array(audio)
-        tmp[self.stopFreq:,:] = 0.
-        return tmp
+    def __call__(self, dataDict):
+        dataDict['Audio'][self.stopFreq:,:] = 0.
+        return dataDict
 
 class AudioDataset(BaseDataset):
     def initialize(self, opt):
@@ -32,27 +30,65 @@ class AudioDataset(BaseDataset):
 
 
     def __getitem__(self, index):
-        Data = self.Data[index % self.oriLen]
-        Data = self.augFuncList[index // self.oriLen](Data)
+        Data = np.array(self.Data[index % self.oriLen])
         Label = self.Labels[index % self.oriLen]
-        fname = self.Fnames[index % self.oriLen]
+        Fname = self.Fnames[index % self.oriLen]
+
+        assert len(Data.shape) == 2
+        assert type(Label) is not np.ndarray
         Audio = np.expand_dims(Data, axis=0)
 
-        if index > self.oriLen:
-            assert np.sum(Data[49:,:]) == 0.
+#        if index > self.oriLen:
+#            assert np.sum(Data[49:,:]) == 0.
 
         # Audio = self.load_audio(Data)
 
         assert Audio.dtype==np.float32
 
+        LabelCode = self._label2Code(Label)
+
+        dataDict = {'Audio': Audio,
+                    'Label': self._one_hot(LabelCode),
+                    'Fname': Fname}
+
+        return self.augFuncList[index // self.oriLen](dataDict)
+
+    def _one_hot(self, index):
+        arr = np.zeros((self.opt.nClasses), dtype=np.float32)
+        arr[index] = 1.
+        return arr
+    def _label2Code(self, labelStr):
         try:
-            LabelCode = self.table.index(Label)
+            LabelCode = self.table.index(labelStr)
         except:
-            LabelCode = len(self.table) - 1
-        return {
-        'Audio': Audio,
-        'Label': LabelCode,
-        'Fname': fname}
+            LabelCode = self.table.index('unknown')
+        return LabelCode
+    def _mixup(self, dataDict):
+        labelCode = np.argmax(dataDict['Label'])
+        if labelCode == self.table.index('silence'):
+            return dataDict
+
+        index = random.choice([i for i in range(self.oriLen) if self.Labels[i] != labelCode])
+        assert type(index) == int
+        # TODO
+        alpha = 1.
+        mixRatio = np.random.beta(alpha, alpha)
+        bData = np.array(self.Data[index])
+        bLabel = self._one_hot(self._label2Code(self.Labels[index]))
+        bName = self.Fnames[index]
+        if self.Labels[index] == self.table.index('silence'):
+            mixLabel = dataDict['Label']
+            mixRatio = max(0.7+1e-5, mixRatio)
+            assert mixRatio > 0.7
+        else:
+            mixLabel = mixRatio * dataDict['Label'] + (1-mixRatio) * bLabel
+
+        mixData = mixRatio * dataDict['Audio'] + (1-mixRatio) * bData
+        mixName = '{}*{}+{}*{}'.format(mixRatio, dataDict['Fname'], 1-mixRatio, bName)
+        return {'Audio' : mixData,
+                'Label' : mixLabel,
+                'Fname' : mixName
+                }
 
     def __len__(self):
         # return len(self.FilesClean)

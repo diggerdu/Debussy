@@ -6,7 +6,7 @@ cd "$(git rev-parse --show-toplevel)"
 mkdir -p checkpoints/$expName/
 cp $selfPath checkpoints/$expName/
 python test.py \
- --which_epoch 198\
+ --which_epoch 142\
  --serial_batches \
  --Path "/home/diggerdu/dataset/tfsrc/test" \
  --dumpPath "data/testDump" \

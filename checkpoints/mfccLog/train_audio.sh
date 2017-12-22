@@ -14,8 +14,8 @@ python train.py \
  --nThreads 13\
  --nfft 512 --hop 256 --nFrames 64 --batchSize  4500\
  --split_hop 0 \
- --niter 200 --niter_decay 30 \
- --lr 1e-5 \
+ --niter 500 --niter_decay 30 \
+ --lr 8e-6 \
  --gpu_ids 0,1,2 \
- --continue_train  --which_epoch 130 \
+# --continue_train  --which_epoch 142 \
 # --serial_batches
