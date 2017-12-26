@@ -120,7 +120,7 @@ class Pix2PixModel(BaseModel):
         try:
             assert np.abs(np.sum(mixTargets.numpy()) - batchSize) < 1e-5
         except:
-            import pdb; pdb.set_trace()
+            import ipdb as pdb; pdb.set_trace()
 
         return mixInputs, mixTargets
 
