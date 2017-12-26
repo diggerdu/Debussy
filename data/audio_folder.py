@@ -4,12 +4,12 @@ import librosa
 import soundfile as sf
 import librosa as lb
 import numpy as np
+import shutil
 
 AUDIO_EXTENSIONS = [
     '.wav',
     '.WAV',
 ]
-
 
 def is_audio_file(filename):
     return any(filename.endswith(extension) for extension in AUDIO_EXTENSIONS)
@@ -64,6 +64,10 @@ def loadData(Dir, opt):
                     n_mels=64,
                     fmax=sr // 2)
 
+                # TODO
+                eps = 1e-3
+                melsp = np.log(melsp + eps)
+
                 audios.append(melsp.astype(np.float32))
                 labels.append(label)
                 fnames.append(fname)
@@ -83,6 +87,11 @@ def make_dataset(opt):
         return audios, labels, fnames
     except:
         pass
+    try:
+        shutil.rmtree(opt.dumpPath)
+    except:
+        pass
+    os.mkdir(opt.dumpPath)
 
     data = loadData(opt.Path, opt)
     audios = data['audios']

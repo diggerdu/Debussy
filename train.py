@@ -36,19 +36,21 @@ for epoch in range(startEpoch+1, opt.niter + 1):
         total_steps += opt.batchSize
         model.set_input(data)
         model.optimize_parameters()
-        label = data['Label'].numpy()
+        label = np.argmax(data['Label'].numpy(), axis=1)
         currentStats = model.get_current_errors()
         error = currentStats['G_LOSS'][0]
         predLogits = currentStats['Logits']
         predLabel = np.argmax(predLogits, axis=1)
         accSum += np.sum(np.array(predLabel) == label)
-        errorSum += error
-        counter += 1
-        dataCount += max(label.shape)
+        errorSum += error * label.shape[0]
+        dataCount += label.shape[0]
+
+    errorMean = errorSum / dataCount
+    model.lrSche.step(errorMean)
 
 
     t = time.time() - epoch_start_time
-    print('epoch ', epoch, ', current error is ', errorSum / counter, ', current acc is ', accSum / dataCount, ' cost time is ', t)
+    print('epoch ', epoch, ', current error is ', errorMean, ', current acc is ', accSum / dataCount, ' cost time is ', t)
     if time.time() - embark_time > 60 * 2:
         model.save('latest')
         model.save('epoch{}'.format(epoch))

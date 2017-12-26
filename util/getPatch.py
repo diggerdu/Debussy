@@ -1,6 +1,16 @@
 import csv
 import os
+from collections import defaultdict
+table = ['yes', 'no', 'up', 'down', 'left', 'right', 'on', 'off', 'stop', 'go', 'silence', 'unknown']
 
+def convertLabel(label):
+    if label == '\\':
+        return 'silence'
+    if label == '\'':
+        return 'unknown'
+    if label not in table:
+        return 'unknown'
+    return label
 
 def getPatch(Path):
     patchList = list()
@@ -23,7 +33,7 @@ def getLabelDict(Path):
             continue
         with open(Path+'/'+fn) as f:
             reader = csv.reader(f)
-            labelDict.update({row[0]:row[1] for row in reader if row[1] != '#'})
+            labelDict.update({row[0]:convertLabel(row[1]) for row in reader if row[1] != '#'})
     return labelDict
 
 
