@@ -33,7 +33,7 @@ class Pix2PixModel(BaseModel):
         self.inputAudio = self.Tensor(opt.batchSize, opt.len).cuda(device=self.gpu_ids[0])
         self.inputLabel = self.Tensor(opt.batchSize, opt.nClasses).cuda(device=self.gpu_ids[0])
         # load/define networks
-        self.netG = networks.define_G(opt.nClasses, self.gpu_ids)
+        self.netG = networks.define_G(opt)
 
 
         if self.isTrain:
@@ -136,12 +136,8 @@ class Pix2PixModel(BaseModel):
         labeledList = list(self.relabelDict.keys())
         self.netG.eval()
         self.forward()
-        # self.input = Variable(self.inputAudio, volatile=True)
-        # self.predLogits = self.netG.forward(self.input)['logits']
-        #self.netG.train()
 
         logitsArray = self.predLogits.cpu().data.numpy()
-        # logitsArray[:,-1] = np.min(logitsArray) - 1.
         prediction = np.argmax(logitsArray, axis=1).astype(int)
 
         LabelCodeArray = np.argmax(self.inputLabel.cpu().numpy(), axis=1)

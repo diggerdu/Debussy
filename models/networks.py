@@ -33,21 +33,25 @@ def get_norm_layer(norm_type):
     return norm_layer
     # return None
 
-
-def define_G(nClasses, gpu_ids=[]):
-    netG = None
-    use_gpu = len(gpu_ids) > 0
+def define_G(opt):
+    use_gpu = len(opt.gpu_ids) > 0
 
     if use_gpu:
         assert (torch.cuda.is_available())
 
     #netG = AuFCNWrapper(n_fft, hop, gpu_ids)
-    netG = CNN(nClasses, gpu_ids)
-
-    if len(gpu_ids) > 0:
-        netG.cuda(device_id=gpu_ids[0])
+    if opt.which_model_netG == 'cnn':
+        netG = CNN(opt.nClasses, opt.gpu_ids)
+    elif opt.which_model_netG == 'lstm':
+        assert len(opt.gpu_ids) == 1
+        netG = LSTM(64, 128, opt.nClasses, opt.batchSize)
+    #netG = LSTM()
+    if len(opt.gpu_ids) > 0:
+        netG.cuda(device_id=opt.gpu_ids[0])
     netG.apply(weights_init)
     return netG
+
+
 
 
 def define_D(input_nc,
@@ -191,4 +195,30 @@ class CNN(nn.Module):
         else:
             return self.model(input)
 
+class LSTM(nn.Module):
+    def __init__(self, inputDim, hiddenDim, outputDim, batchSize):
+        super(LSTM, self).__init__()
+        self.inputDim = inputDim
+        self.hiddenDim = hiddenDim
+        self.batchSize = batchSize
+        self.lstm = nn.LSTM(inputDim, hiddenDim, 4)
+        self.hidden2logits = nn.Linear(hiddenDim, outputDim)
+        self.hidden = self.initHidden()
+        self.logSoftmax = nn.LogSoftmax()
+
+    def initHidden(self):
+        h0 = Variable(torch.zeros(4, self.batchSize, self.hiddenDim).cuda())
+        c0 = Variable(torch.zeros(4, self.batchSize, self.hiddenDim).cuda())
+        return (h0, c0)
+
+    def forward(self, x):
+        x = torch.squeeze(x)
+        x = x.transpose(0, 1)
+        #import ipdb; ipdb.set_trace()
+        assert x.size()[1] == self.batchSize and x.size()[2] == self.inputDim
+        output, self.hidden = self.lstm(x, self.hidden)
+        output, _ = self.lstm(x)
+        logits = self.hidden2logits(output[-1])
+        logits = self.logSoftmax(logits)
+        return {'logits':logits}
 
