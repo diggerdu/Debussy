@@ -10,12 +10,13 @@ python train.py \
  --additionPath "/home/diggerdu/dataset/tfsrc/extendTrain/" \
  --dumpPath "data/trainDump" \
  --nClasses 12\
- --name $expName --model pix2pix --which_model_netG wide_resnet_3blocks \
+ --name $expName --model pix2pix --which_model_netG cnn \
  --nThreads 13\
- --nfft 512 --hop 256 --nFrames 64 --batchSize  4500\
+ --nfft 512 --hop 256 --nFrames 64 --batchSize  3000\
  --split_hop 0 \
  --niter 500 --niter_decay 30 \
- --lr 8e-6 \
+ --lr 1e-4 \
+ --weightDecay 0 \
  --gpu_ids 0,1,2 \
-# --continue_train  --which_epoch 142 \
+ --continue_train  --which_epoch 91 \
 # --serial_batches

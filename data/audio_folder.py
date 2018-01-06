@@ -5,6 +5,7 @@ import soundfile as sf
 import librosa as lb
 import numpy as np
 import shutil
+import random
 
 AUDIO_EXTENSIONS = [
     '.wav',
@@ -13,6 +14,60 @@ AUDIO_EXTENSIONS = [
 
 def is_audio_file(filename):
     return any(filename.endswith(extension) for extension in AUDIO_EXTENSIONS)
+
+def getMel(path, opt):
+    try:
+        wav, sr = sf.read(path, dtype='float32')
+    except:
+        assert False
+    try:
+        assert sr == opt.SR
+    except AssertionError:
+        wav = librosa.resample(wav, sr, opt.SR)
+    print('{}:{}'.format(path, wav.shape[0]))
+    target_len = opt.len - 512
+
+    if wav.shape[0] > target_len:
+        offsetSum = 0
+        maxSum = 0
+        maxHead = 0
+        for head in range(wav.shape[0] - target_len):
+            if offsetSum > maxSum:
+                offsetSum = maxSum
+                maxHead = head
+            offsetSum -= np.abs(wav[head])
+            offsetSum += np.abs(wav[head + target_len])
+        print('maxHead: ', maxHead)
+
+        wav = wav[maxHead:maxHead + target_len]
+
+    if wav.shape[0] < target_len:
+        ExtraLen = target_len - wav.shape[0]
+        PrevExtraLen = np.random.randint(ExtraLen)
+        PostExtraLen = ExtraLen - PrevExtraLen
+        PrevExtra = np.zeros((PrevExtraLen, ), dtype=np.float32)
+        PostExtra = np.zeros((PostExtraLen, ), dtype=np.float32)
+        wav = np.concatenate((PrevExtra, wav, PostExtra))
+
+    assert wav.shape[0] == target_len
+
+    wav = wav - np.mean(wav)
+    if np.max(np.abs(wav)) > 0:
+        wav = wav / np.max(np.abs(wav))
+    melsp = librosa.feature.melspectrogram(
+                    y=wav,
+                    sr=sr,
+                    S=None,
+                    n_fft=opt.nfft,
+                    hop_length=opt.hop,
+                    power=2.0,
+                    n_mels=64,
+                    fmax=sr // 2)
+    # TODO
+    eps = 1e-3
+    melsp = np.log(melsp + eps)
+    return melsp.astype(np.float32)
+
 
 
 def loadData(Dir, opt):
@@ -25,52 +80,43 @@ def loadData(Dir, opt):
         for fname in fns:
             if is_audio_file(fname):
                 path = os.path.join(root, fname)
-                print(path)
                 label = path.split('/')[-2]
-                try:
-                    wav, sr = sf.read(path, dtype='float32')
-                except:
-                    continue
-                try:
-                    assert sr == opt.SR
-                except AssertionError:
-                    wav = librosa.resample(wav, sr, opt.SR)
 
-                target_len = opt.len - 512
+                melsp = getMel(path, opt)
 
-                if wav.shape[0] >= target_len:
-                    head = random.randint(0, wav.shape[0] - target_len)
-                    wav = wav[head:head + target_len]
-                if wav.shape[0] < target_len:
-                    ExtraLen = target_len - wav.shape[0]
-                    PrevExtraLen = np.random.randint(ExtraLen)
-                    PostExtraLen = ExtraLen - PrevExtraLen
-                    PrevExtra = np.zeros((PrevExtraLen, ), dtype=np.float32)
-                    PostExtra = np.zeros((PostExtraLen, ), dtype=np.float32)
-                    wav = np.concatenate((PrevExtra, wav, PostExtra))
-
-                wav = wav - np.mean(wav)
-                if np.max(np.abs(wav)) > 0:
-                    wav = wav / np.max(np.abs(wav))
-                # sf.write(path, wav, opt.SR)
-
-                melsp = librosa.feature.melspectrogram(
-                    y=wav,
-                    sr=sr,
-                    S=None,
-                    n_fft=opt.nfft,
-                    hop_length=opt.hop,
-                    power=2.0,
-                    n_mels=64,
-                    fmax=sr // 2)
-
-                # TODO
-                eps = 1e-3
-                melsp = np.log(melsp + eps)
-
-                audios.append(melsp.astype(np.float32))
+                audios.append(melsp)
                 labels.append(label)
                 fnames.append(fname)
+
+
+                # TODO
+                if opt.isTrain:
+                    os.system("sox {0} /tmp/outTempo1.9.wav tempo -s 1.9".format(path))
+                    melsp = getMel('/tmp/outTempo1.9.wav', opt)
+                    audios.append(melsp)
+                    labels.append(label)
+                    fnames.append(fname + '_tempo1.9')
+
+                    #os.system("sox {0} /tmp/outTempo0.75.wav tempo -s 0.75 silence 1 0.1 1% -1 0.1 1%".format(path))
+                    os.system("sox {0} /tmp/outTempo0.75.wav tempo -s 0.75".format(path))
+                    melsp = getMel('/tmp/outTempo0.75.wav', opt)
+                    audios.append(melsp)
+                    labels.append(label)
+                    fnames.append(fname + '_tempo0.75')
+
+                    os.system("sox {0} /tmp/outPitch500.wav pitch 500".format(path))
+                    melsp = getMel('/tmp/outPitch500.wav', opt)
+                    audios.append(melsp)
+                    labels.append(label)
+                    fnames.append(fname + '_pitch500')
+
+                    os.system("sox {0} /tmp/outPitch-500.wav pitch -500".format(path))
+                    melsp = getMel('/tmp/outPitch-500.wav', opt)
+                    audios.append(melsp)
+                    labels.append(label)
+                    fnames.append(fname + '_pitch-500')
+
+
     return {'audios':audios, 'labels':labels, 'fnames':fnames}
 
 

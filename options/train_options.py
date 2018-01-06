@@ -5,6 +5,9 @@ class TrainOptions(BaseOptions):
     def initialize(self):
         BaseOptions.initialize(self)
         self.parser.add_argument('--optimizer', type=str, default='Adam', help='adam, sgd')
+        self.parser.add_argument('--weightDecay', type=float, default=0.0005, help='weight decay')
+        self.parser.add_argument('--mixup', action='store_true', help='enable mixup')
+        self.parser.add_argument('--mixupAlpha', type=float, default=0.005, help='mixup alpha')
         self.parser.add_argument('--display_freq', type=int, default=100, help='frequency of showing training results on screen')
         self.parser.add_argument('--print_freq', type=int, default=100, help='frequency of showing training results on console')
         self.parser.add_argument('--save_latest_freq', type=int, default=5000, help='frequency of saving the latest results')

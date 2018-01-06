@@ -1,9 +1,9 @@
 ------------ Options -------------
-Path: /home/diggerdu/dataset/tfsrc/test
+Path: /home/diggerdu/dataset/tfsrc/test/audio
 SR: 16000
 additionPath: None
 aspect_ratio: 1.0
-batchSize: 3000
+batchSize: 1000
 checkpoints_dir: ./checkpoints
 display_id: 1
 display_port: 52006
@@ -21,7 +21,7 @@ max_dataset_size: inf
 model: pix2pix
 nClasses: 12
 nFrames: 64
-nThreads: 6
+nThreads: 13
 n_layers_D: 3
 name: mfccLog
 ndf: 64
@@ -36,7 +36,7 @@ serial_batches: True
 split_hop: 0
 use_dropout: False
 which_direction: AtoB
-which_epoch: 170
+which_epoch: 210
 which_model_netD: basic
-which_model_netG: wide_resnet_3blocks
+which_model_netG: cnn
 -------------- End ----------------

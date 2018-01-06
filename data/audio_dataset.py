@@ -1,6 +1,6 @@
 import os.path
 from data.base_dataset import BaseDataset
-from data.audio_folder import make_dataset
+from data.audio_folder import make_dataset, getMel
 import librosa
 import soundfile as sf
 import numpy as np
@@ -10,7 +10,7 @@ class freqFilter(object):
     def __init__(self, stopFreq=49):
         self.stopFreq = 49
     def __call__(self, dataDict):
-        dataDict['Audio'][self.stopFreq:,:] = 0.
+        dataDict['Audio'][0, self.stopFreq:,:] = 0.
         return dataDict
 
 class AudioDataset(BaseDataset):
@@ -18,6 +18,7 @@ class AudioDataset(BaseDataset):
         self.opt = opt
         self.Dir = opt.Path
         self.Data, self.Labels, self.Fnames = make_dataset(opt)
+        self.pinkNoise = getMel('/home/diggerdu/dataset/tfsrc/train/_background_noise_/pink_noise.wav', opt)
         self.oriLen = len(self.Data)
         self.SR = opt.SR
         self.hop = opt.hop
@@ -31,6 +32,8 @@ class AudioDataset(BaseDataset):
 
     def __getitem__(self, index):
         Data = np.array(self.Data[index % self.oriLen])
+        if self.opt.isTrain:
+            Data = Data + self.getRatio() * self.pinkNoise
         Label = self.Labels[index % self.oriLen]
         Fname = self.Fnames[index % self.oriLen]
 
@@ -52,6 +55,17 @@ class AudioDataset(BaseDataset):
                     'Fname': Fname}
 
         return self.augFuncList[index // self.oriLen](dataDict)
+
+    def getRatio(self):
+        import scipy.stats as stats
+        lower, upper = -0.1, 0.5
+        mu, sigma = 0.15, 0.1
+        X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+        ratio = X.rvs()
+        assert ratio > lower - 1e-3 and ratio < upper + 1e-3
+        if ratio < 0.:
+            ratio = 0.
+        return ratio
 
     def _one_hot(self, index):
         arr = np.zeros((self.opt.nClasses), dtype=np.float32)

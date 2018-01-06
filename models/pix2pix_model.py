@@ -70,10 +70,10 @@ class Pix2PixModel(BaseModel):
 
             if self.opt.optimizer == 'Adam':
                 self.optimizer_G = torch.optim.Adam(
-                    filter(lambda P: id(P) not in IgnoredParam,
-                       self.netG.parameters()),
+                        self.netG.parameters(),
                         lr=opt.lr,
-                        betas=(opt.beta1, 0.999))
+                        betas=(opt.beta1, 0.999),
+                        weight_decay = self.opt.weightDecay)
 
             if self.opt.optimizer == 'sgd':
                 self.optimizer_G = torch.optim.SGD(
@@ -93,7 +93,7 @@ class Pix2PixModel(BaseModel):
         inputAudio = input['Audio']
         inputLabel = input['Label']
 
-        if self.opt.isTrain:
+        if self.opt.isTrain and self.opt.mixup is True:
             inputAudio, inputLabel = self.mixup(inputAudio, inputLabel)
 
         self.inputFname = input['Fname']
@@ -107,8 +107,7 @@ class Pix2PixModel(BaseModel):
         inputsB = inputs[indexB]
         targetsB = targets[indexB]
 
-        # TODO
-        alpha = 0.1
+        alpha = self.opt.mixupAlpha
         mixRatio = np.random.beta(alpha, alpha, [batchSize, ])
         mixRatioInputs = np.broadcast_to(mixRatio[..., None, None, None], inputs.shape)
         mixRatioInputs = torch.from_numpy(mixRatioInputs).float()
@@ -118,7 +117,7 @@ class Pix2PixModel(BaseModel):
         mixInputs = mixRatioInputs * inputs + (1-mixRatioInputs) * inputsB
         mixTargets = mixRatioTargets * targets + (1-mixRatioTargets) * targetsB
         try:
-            assert np.abs(np.sum(mixTargets.numpy()) - batchSize) < 1e-5
+            assert np.abs(np.sum(mixTargets.numpy()) - batchSize) < 1e-2
         except:
             import ipdb as pdb; pdb.set_trace()
 

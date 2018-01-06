@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
 from timeit import default_timer as timer
 
 import argparse
@@ -48,7 +48,7 @@ class transciber(object):
         print('Loading model from file %s' % modelPath, file=sys.stderr)
         model_load_start = timer()
         self.model = Model(modelPath, numFeatures, numContext, alphabet, beamWidth)
-        self.model.enableDecoderWithLM(alphabet, lmPath, trie, LM_WEIGHT, WORD_COUNT_WEIGHT, VALID_WORD_COUNT_WEIGHT)
+        # self.model.enableDecoderWithLM(alphabet, lmPath, trie, LM_WEIGHT, WORD_COUNT_WEIGHT, VALID_WORD_COUNT_WEIGHT)
         model_load_end = timer() - model_load_start
         print('Loaded model in %0.3fs.' % (model_load_end), file=sys.stderr)
 
@@ -69,11 +69,11 @@ if __name__ == '__main__':
                     )
     import pickle
     labelDict = dict()
-    persistFile = open('testlabel.pkl', 'wb')
-    csvFile = open('testlabel.csv', 'w+')
+    persistFile = open('testlabelLMfreeTempo0.75.pkl', 'w')
+    csvFile = open('testlabelLMfreeTempo0.75.csv', 'w+')
     count = 0
 
-    for fn in os.listdir('/home/diggerdu/dataset/tfsrc/test/audio'):
+    for fn in os.listdir('/home/diggerdu/dataset/tfsrc/test/tempo0.75'):
         try:
             assert fn.endswith('.wav')
             label = TR.transcribe('/home/diggerdu/dataset/tfsrc/test/audio/{}'.format(fn))
