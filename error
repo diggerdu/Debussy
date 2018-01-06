@@ -4,6 +4,7 @@ error
 /home/diggerdu/dataset/tfsrc/test/audio/clip_bab8a56da.wav
 
 artifcat
+gp
 /home/diggerdu/dataset/tfsrc/test/audio/clip_3aacfaab0.wav
 /home/diggerdu/dataset/tfsrc/test/audio/clip_f187454b7.wav
 /home/diggerdu/dataset/tfsrc/test/audio/clip_a45c75814.wav
@@ -13,7 +14,6 @@ artifcat
 /home/diggerdu/dataset/tfsrc/test/audio/clip_7f7459dbe.wav
 /home/diggerdu/dataset/tfsrc/test/audio/clip_9beeaa53a.wav
 /home/diggerdu/dataset/tfsrc/test/audio/clip_e4752421d.wav
-
 
 
 yes, on
@@ -32,3 +32,8 @@ miss
 
 miss learn to left
 yes left
+down dog
+
+on off up
+
+lift
