@@ -7,6 +7,7 @@ from torch.autograd import Variable
 from torch.optim import lr_scheduler
 import util.util as util
 from util.image_pool import ImagePool
+import pickle
 from .base_model import BaseModel
 from . import networks
 from . import time_frequence as tf
@@ -134,6 +135,8 @@ class Pix2PixModel(BaseModel):
     # no backprop gradients
     def test(self):
         labeledList = list(self.relabelDict.keys())
+        # confidence dict
+        confDict = dict()
         self.netG.eval()
         self.forward()
 
@@ -146,6 +149,14 @@ class Pix2PixModel(BaseModel):
         predictLabel = [self.table[i] for i in prediction]
 
         relabelCount = 0
+        for i in range(len(self.inputFname)):
+            confDict.update({self.inputFname[i] : logitsArray[i]})
+
+        dictPath = os.path.join(opt.checkpoints_dir, opt.name, 'confidence.pkl')
+
+        with open(dictPath, 'w') as f:
+            pickle.dump(confDict)
+
         with open(self.sub_name, 'a') as f:
             message = [m for m in zip(self.inputFname, predictLabel)]
             writer = csv.writer(f)

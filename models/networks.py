@@ -203,21 +203,24 @@ class LSTM(nn.Module):
         self.batchSize = batchSize
         self.lstm = nn.LSTM(inputDim, hiddenDim, 4)
         self.hidden2logits = nn.Linear(hiddenDim, outputDim)
-        self.hidden = self.initHidden()
+        self.hidden = self.initHidden(self.batchSize)
         self.logSoftmax = nn.LogSoftmax()
 
-    def initHidden(self):
-        h0 = Variable(torch.zeros(4, self.batchSize, self.hiddenDim).cuda())
-        c0 = Variable(torch.zeros(4, self.batchSize, self.hiddenDim).cuda())
+    def initHidden(self, batchSize):
+        h0 = Variable(torch.zeros(4, batchSize, self.hiddenDim).cuda())
+        c0 = Variable(torch.zeros(4, batchSize, self.hiddenDim).cuda())
         return (h0, c0)
 
     def forward(self, x):
         x = torch.squeeze(x)
         x = x.transpose(0, 1)
-        #import ipdb; ipdb.set_trace()
-        assert x.size()[1] == self.batchSize and x.size()[2] == self.inputDim
-        output, self.hidden = self.lstm(x, self.hidden)
-        output, _ = self.lstm(x)
+        try:
+            assert x.size()[1] == self.batchSize and x.size()[2] == self.inputDim
+            output, _ = self.lstm(x, self.hidden)
+        except:
+            print('shape not match')
+            output, _ = self.lstm(x, self.initHidden(x.size()[1]))
+
         logits = self.hidden2logits(output[-1])
         logits = self.logSoftmax(logits)
         return {'logits':logits}
