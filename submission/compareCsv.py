@@ -15,7 +15,8 @@ with open(args.csvFile1, mode='r') as f:
     diffList = [row for row in reader1 if labelDict0[row[0]] != row[1]]
 
 for row in diffList:
-    print('{}:{},{}'.format(row[0], row[1], labelDict0[row[0]]))
+    # print('{}:{},{}'.format(row[0], row[1], labelDict0[row[0]]))
+    print('{},{}'.format(row[0], row[1]))
 
 
 

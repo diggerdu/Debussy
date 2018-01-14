@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import csv
 import torch
 import os
@@ -135,8 +136,6 @@ class Pix2PixModel(BaseModel):
     # no backprop gradients
     def test(self):
         labeledList = list(self.relabelDict.keys())
-        # confidence dict
-        confDict = dict()
         self.netG.eval()
         self.forward()
 
@@ -147,24 +146,24 @@ class Pix2PixModel(BaseModel):
 
         print(np.sum(LabelCodeArray == prediction) / max(prediction.shape))
         predictLabel = [self.table[i] for i in prediction]
-
         relabelCount = 0
-        for i in range(len(self.inputFname)):
-            confDict.update({self.inputFname[i] : logitsArray[i]})
 
-        dictPath = os.path.join(opt.checkpoints_dir, opt.name, 'confidence.pkl')
-
-        with open(dictPath, 'w') as f:
-            pickle.dump(confDict)
+        # confidence
+        confPath = os.path.join(self.opt.checkpoints_dir, self.opt.name, 'confidence.csv')
+        confData = pd.DataFrame(np.exp(logitsArray), index=self.inputFname)
+        with open(confPath, 'a') as f:
+            confData.to_csv(f, header=False)
 
         with open(self.sub_name, 'a') as f:
             message = [m for m in zip(self.inputFname, predictLabel)]
             writer = csv.writer(f)
             for row in message:
+                '''
                 if row[0] in labeledList and self.relabelDict[row[0]] != row[1]:
                     row = (row[0],self.relabelDict[row[0]])
                     relabelCount += 1
                 assert row[1] in self.table
+                '''
                 writer.writerow(row)
 
         print('relabeling ', relabelCount)

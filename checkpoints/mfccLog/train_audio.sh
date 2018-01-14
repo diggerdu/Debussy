@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export CUDA_VISIBLE_DEVICES=1,2
+export CUDA_VISIBLE_DEVICES=0,1,2
 expName=mfccLog
 selfPath=`realpath $0`
 cd "$(git rev-parse --show-toplevel)"
@@ -15,8 +15,8 @@ python train.py \
  --nfft 512 --hop 256 --nFrames 64 --batchSize  3000\
  --split_hop 0 \
  --niter 500 --niter_decay 30 \
- --lr 1e-5 \
+ --lr 8e-4 \
  --weightDecay 0 \
- --gpu_ids 0,1 \
- --continue_train  --which_epoch 210 \
+ --gpu_ids 0,1,2 \
+ --continue_train  --which_epoch 119 \
 # --serial_batches

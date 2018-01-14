@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=1
 expName=mfccLogLSTM
 selfPath=`realpath $0`
 cd "$(git rev-parse --show-toplevel)"
 mkdir -p checkpoints/$expName/
 cp $selfPath checkpoints/$expName/
 python test.py \
- --which_epoch 170\
+ --which_epoch 243\
  --serial_batches \
  --Path "/home/diggerdu/dataset/tfsrc/test/audio" \
  --dumpPath "data/testDump" \

@@ -1,0 +1,26 @@
+epoch  217 , current error is  9.16403667471e-05 , current acc is  0.999348351634  cost time is  290.459490776062
+epoch  218 , current error is  9.16637312419e-05 , current acc is  0.999356455033  cost time is  289.6311659812927
+epoch  219 , current error is  9.35623495926e-05 , current acc is  0.999334845968  cost time is  290.3207640647888
+epoch  220 , current error is  9.0202922032e-05 , current acc is  0.999348351634  cost time is  289.6582918167114
+epoch  221 , current error is  8.96909326692e-05 , current acc is  0.999357805599  cost time is  290.05325841903687
+epoch  222 , current error is  8.94023676303e-05 , current acc is  0.999362532582  cost time is  290.3727459907532
+epoch  223 , current error is  8.85091031377e-05 , current acc is  0.999360506733  cost time is  290.90991473197937
+epoch  224 , current error is  8.78525112018e-05 , current acc is  0.9993537539  cost time is  290.6626091003418
+epoch  225 , current error is  8.74805963979e-05 , current acc is  0.999361182016  cost time is  290.4943013191223
+epoch  226 , current error is  8.7132550125e-05 , current acc is  0.999366584282  cost time is  290.9152705669403
+epoch  227 , current error is  8.60069124026e-05 , current acc is  0.999376713531  cost time is  290.95642495155334
+epoch  228 , current error is  8.66165142456e-05 , current acc is  0.999382115798  cost time is  291.11443042755127
+epoch  229 , current error is  8.51412978476e-05 , current acc is  0.999383466364  cost time is  290.91839146614075
+epoch  230 , current error is  8.40897836232e-05 , current acc is  0.999384816931  cost time is  291.07156133651733
+epoch  231 , current error is  8.44305038341e-05 , current acc is  0.99938886863  cost time is  306.3656716346741
+epoch  232 , current error is  8.22317835186e-05 , current acc is  0.999402374296  cost time is  304.6438341140747
+epoch  233 , current error is  8.38392750757e-05 , current acc is  0.999375362965  cost time is  293.22866916656494
+epoch  234 , current error is  8.2787065799e-05 , current acc is  0.999391569764  cost time is  293.57456135749817
+epoch  235 , current error is  8.29001990465e-05 , current acc is  0.999405075429  cost time is  293.43533539772034
+epoch  236 , current error is  8.33053077193e-05 , current acc is  0.999395621463  cost time is  298.95319509506226
+epoch  237 , current error is  8.07538760021e-05 , current acc is  0.999420606945  cost time is  296.4839279651642
+epoch  238 , current error is  8.2311568066e-05 , current acc is  0.999409127129  cost time is  293.62351417541504
+epoch  239 , current error is  8.16413757204e-05 , current acc is  0.999413178829  cost time is  293.77163791656494
+epoch  240 , current error is  7.92932137615e-05 , current acc is  0.999413854112  cost time is  292.91830801963806
+epoch  241 , current error is  8.03136877268e-05 , current acc is  0.999412503545  cost time is  293.5898151397705
+

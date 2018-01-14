@@ -36,7 +36,7 @@ serial_batches: True
 split_hop: 0
 use_dropout: False
 which_direction: AtoB
-which_epoch: 180
+which_epoch: 166
 which_model_netD: basic
-which_model_netG: wide_resnet_3blocks
+which_model_netG: cnn
 -------------- End ----------------

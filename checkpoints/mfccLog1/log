@@ -1,0 +1,27 @@
+epoch  83 , current error is  0.00928080318168 , current acc is  0│audio_dataset.py     base_dataset.py                extractData.py 
+.636472851107  cost time is  201.91528272628784                   │ testDump           trainDump_tempo1.9
+epoch  84 , current error is  0.00926366571559 , current acc is  0│audio_folder.py      custom_dataset_data_loader.py  __init__.py    
+.635356624834  cost time is  199.8607313632965                    │ testDumpTempo0.75
+epoch  85 , current error is  0.00924970402294 , current acc is  0│base_data_loader.py  data_loader.py                 __pycache__    
+.635764961847  cost time is  199.80430579185486                   │ trainDump
+epoch  86 , current error is  0.00926802467208 , current acc is  0│
+.63544964369  cost time is  200.0437891483307                     │# diggerdu @ ML-machine in ~/fuck/data on git:master x [13:23:39] 
+epoch  87 , current error is  0.00930043983278 , current acc is  0│$ 
+.635676672763  cost time is  199.38884210586548                   │
+epoch  88 , current error is  0.00928230506675 , current acc is  0│
+.63611654159  cost time is  207.88687443733215                    │
+epoch  89 , current error is  0.00929093235348 , current acc is  0│
+.636788169263  cost time is  199.8220705986023                    │
+epoch  90 , current error is  0.00927246537123 , current acc is  0│
+.635861133884  cost time is  200.317241191864                     │
+epoch  91 , current error is  0.00922084586184 , current acc is  0│
+.635585230498  cost time is  200.0836639404297                    │
+epoch  92 , current error is  0.00924135937655 , current acc is  0│
+.636141767043  cost time is  200.03294777870178                   │
+epoch  93 , current error is  0.00921809682806 , current acc is  0│
+.636606861323  cost time is  199.90337777137756                   │
+epoch  94 , current error is  0.00921406962365 , current acc is  0│
+.636616320868  cost time is  200.31918478012085                   │
+epoch  95 , current error is  0.00919606777225 , current acc is  0│
+.635359778016  cost time is  215.7387411594391                    │
+

@@ -108,3 +108,4 @@ venv.bak/
 trie
 *.npy
 *.pth
+confidence.csv

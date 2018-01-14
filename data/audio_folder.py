@@ -1,11 +1,14 @@
 import os
 import os.path
+import time
 import librosa
 import soundfile as sf
 import librosa as lb
 import numpy as np
 import shutil
 import random
+import gc
+import multiprocessing
 
 AUDIO_EXTENSIONS = [
     '.wav',
@@ -19,7 +22,9 @@ def getMel(path, opt):
     try:
         wav, sr = sf.read(path, dtype='float32')
     except:
-        assert False
+        time.sleep(6)
+        wav, sr = sf.read(path, dtype='float32')
+
     try:
         assert sr == opt.SR
     except AssertionError:
@@ -69,52 +74,94 @@ def getMel(path, opt):
     return melsp.astype(np.float32)
 
 
+def procFile(paraList):
+    path, prevData, opt = paraList
+    audios, labels, fnames = [list() for i in range(3)]
+    if True:
+        label, fname = path.split('/')[-2:]
+        print(label, fname)
 
-def loadData(Dir, opt):
+        if prevData is not None and fname in prevData['fnames']:
+            melsp = prevData['audios'][prevData['fnames'].index(fname)]
+        else:
+            melsp = getMel(path, opt)
+
+        audios.append(melsp)
+        labels.append(label)
+        fnames.append(fname)
+
+
+        # TODO
+        if opt.isTrain:
+            tmpFname = fname.split('.')[0] + '_tempo1.9.wav'
+            if prevData is not None and tmpFname in prevData['fnames']:
+                melsp = prevData['audios'][prevData['fnames'].index(tmpFname)]
+            else:
+                os.system("sox {0} /tmp/{1} tempo -s 1.9".format(path, tmpFname))
+                melsp = getMel('/tmp/{}'.format(tmpFname), opt)
+                # os.remove('/tmp/{}'.format(tmpFname))
+            audios.append(melsp)
+            labels.append(label)
+            fnames.append(tmpFname)
+
+            '''
+            tmpFname = fname.split('.')[0] + '_tempo0.75.wav'
+            if prevData is not None and tmpFname in prevData['fnames']:
+                melsp = prevData['audios'][prevData['fnames'].index(tmpFname)]
+            else:
+                os.system("sox {0} /tmp/{1} tempo -s 0.75".format(path, tmpFname))
+                melsp = getMel('/tmp/{}'.format(tmpFname), opt)
+                os.remove('/tmp/{}'.format(tmpFname))
+            audios.append(melsp)
+            labels.append(label)
+            fnames.append(tmpFname)
+
+
+            tmpFname = fname.split('.')[0] + '_pitch500.wav'
+            if prevData is not None and tmpFname in prevData['fnames']:
+                melsp = prevData['audios'][prevData['fnames'].index(tmpFname)]
+            else:
+                os.system("sox {0} /tmp/{1} pitch 500".format(path, tmpFname))
+                melsp = getMel('/tmp/{}'.format(tmpFname), opt)
+                os.remove('/tmp/{}'.format(tmpFname))
+            audios.append(melsp)
+            labels.append(label)
+            fnames.append(tmpFname)
+
+            tmpFname = fname.split('.')[0] + '_pitch-500.wav'
+            if prevData is not None and tmpFname in prevData['fnames']:
+                melsp = prevData['audios'][prevData['fnames'].index(tmpFname)]
+            else:
+                os.system("sox {0} /tmp/{1} pitch -500".format(path, tmpFname))
+                melsp = getMel('/tmp/{}'.format(tmpFname), opt)
+                os.remove('/tmp/{}'.format(tmpFname))
+            audios.append(melsp)
+            labels.append(label)
+            fnames.append(tmpFname)
+            '''
+
+    return {'audios':audios, 'labels':labels, 'fnames':fnames}
+
+def loadData(Dir, opt, prevData=None):
     assert os.path.isdir(Dir), '%s is not a valid directory' % dir
+    assert prevData is None
     audios = list()
     labels = list()
     fnames = list()
+    processPool = multiprocessing.Pool(32)
 
+    paraList = list()
     for root, _, fns in sorted(os.walk(Dir)):
         for fname in fns:
             if is_audio_file(fname):
-                path = os.path.join(root, fname)
-                label = path.split('/')[-2]
+                paraList.append([os.path.join(root, fname), prevData, opt])
 
-                melsp = getMel(path, opt)
-
-                audios.append(melsp)
-                labels.append(label)
-                fnames.append(fname)
-
-
-                # TODO
-                if opt.isTrain:
-                    os.system("sox {0} /tmp/outTempo1.9.wav tempo -s 1.9".format(path))
-                    melsp = getMel('/tmp/outTempo1.9.wav', opt)
-                    audios.append(melsp)
-                    labels.append(label)
-                    fnames.append(fname + '_tempo1.9')
-
-                    #os.system("sox {0} /tmp/outTempo0.75.wav tempo -s 0.75 silence 1 0.1 1% -1 0.1 1%".format(path))
-                    os.system("sox {0} /tmp/outTempo0.75.wav tempo -s 0.75".format(path))
-                    melsp = getMel('/tmp/outTempo0.75.wav', opt)
-                    audios.append(melsp)
-                    labels.append(label)
-                    fnames.append(fname + '_tempo0.75')
-
-                    os.system("sox {0} /tmp/outPitch500.wav pitch 500".format(path))
-                    melsp = getMel('/tmp/outPitch500.wav', opt)
-                    audios.append(melsp)
-                    labels.append(label)
-                    fnames.append(fname + '_pitch500')
-
-                    os.system("sox {0} /tmp/outPitch-500.wav pitch -500".format(path))
-                    melsp = getMel('/tmp/outPitch-500.wav', opt)
-                    audios.append(melsp)
-                    labels.append(label)
-                    fnames.append(fname + '_pitch-500')
+    # import dill
+    # processFunc = lambda path:procFile(path, prevData, opt.isTrain)
+    output = processPool.map(procFile, paraList)
+    audios = [a for item in output for a in item['audios']]
+    labels = [l for item in output for l in item['labels']]
+    fnames = [f for item in output for f in item['fnames']]
 
 
     return {'audios':audios, 'labels':labels, 'fnames':fnames}
@@ -125,10 +172,12 @@ def make_dataset(opt):
     audios = []
     labels = []
     fnames = []
+    prevData = None
     try:
         audios = np.load(opt.dumpPath + "/audios.npy")
         labels = np.load(opt.dumpPath + "/labels.npy").tolist()
         fnames = np.load(opt.dumpPath + "/fnames.npy").tolist()
+        # prevData={'audios':audios, 'labels':labels, 'fnames':fnames}
         print("######CAUTION:previous generated dataset loaded###########")
         return audios, labels, fnames
     except:
@@ -139,12 +188,12 @@ def make_dataset(opt):
         pass
     os.mkdir(opt.dumpPath)
 
-    data = loadData(opt.Path, opt)
+    data = loadData(opt.Path, opt, prevData)
     audios = data['audios']
     labels = data['labels']
     fnames = data['fnames']
     if opt.additionPath is not None:
-        additionData = loadData(opt.additionPath, opt)
+        additionData = loadData(opt.additionPath, opt, prevData)
         audios.extend(additionData['audios'])
         labels.extend(additionData['labels'])
         fnames.extend(additionData['fnames'])

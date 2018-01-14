@@ -36,7 +36,7 @@ serial_batches: True
 split_hop: 0
 use_dropout: False
 which_direction: AtoB
-which_epoch: 170
+which_epoch: 243
 which_model_netD: basic
 which_model_netG: lstm
 -------------- End ----------------
